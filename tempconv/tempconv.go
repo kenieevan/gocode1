@@ -1,6 +1,9 @@
-package tempconv
+package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+)
 
 const (
 	freezeF = 0
@@ -18,8 +21,47 @@ const (
 	BoilingC      Celsius = 100
 )
 
-func CToF(c Celsius) Fahrenheit  { return Fahrenheit(c*9/5 + 32) }
-func (c Celsius) String() string { return fmt.Sprintf("%g degree", c) }
+//it shall implent String() and Set() function to satisfy flag.Value() interface
+type celsiusFlag struct{ Celsius }
+
+func CToF(c Celsius) Fahrenheit { return Fahrenheit(c*9/5 + 32) }
+
+func (c Celsius) String() string { return fmt.Sprintf("%g C", c) }
+func F2C(val Fahrenheit) Celsius {
+	return Celsius((val - 32) * 5 / 9)
+}
+
+//string => 100C  or 200F
+func (f *celsiusFlag) Set(s string) error {
+	var value float64
+	var unit string
+	fmt.Sscanf(s, "%f%s", &value, &unit)
+
+	switch unit {
+	case "C":
+		f.Celsius = Celsius(value)
+		return nil
+	case "F":
+		f.Celsius = F2C(Fahrenheit(value))
+		return nil
+	}
+	return fmt.Errorf("invalid arg %q", s)
+}
+
+func setupCelsiusFlag(name string, defaultVal Celsius, usage string) *Celsius {
+
+	f := celsiusFlag{defaultVal}
+
+	flag.CommandLine.Var(&f, name, usage)
+	return &f.Celsius
+}
+
+func main() {
+
+	var temp = setupCelsiusFlag("temp", 20.0, "the temperature")
+	flag.Parse()
+	fmt.Println(*temp)
+}
 
 //it seems syntax error to invoke function in short var declare
 //func main() {
