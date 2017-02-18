@@ -13,6 +13,8 @@ func main() {
 		if strings.HasPrefix(url, "http://") != true {
 			url = "http://" + url
 		}
+		//debug
+		fmt.Fprintf(os.Stdout, "Get url from server %v \n", url)
 		resp, err := http.Get(url)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v \n", err)
